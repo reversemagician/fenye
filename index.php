@@ -38,7 +38,7 @@ $fenye_result=$fenye->result();//获取结果 方法四
 echo '<br><br><br>可用方法：<br>'.$fenye_result['css'],$fenye_result['html'];
 
 //////动态默认模板css.btn_class_pre参数
-//由上两个例子可见,虽然第二个例子配置了css.color的参数,但是按钮颜色没有改变，因为在同一个html页面中class相同所以，css样式被覆盖了(默认颜色是绿色)，所以默认模板增加了一个类前缀参数
+//由上两个例子可见,虽然第二个例子配置了css.color的参数,但是按钮颜色是相同的，因为在同一个html页面中class相同所以，css样式被覆盖了(默认颜色是绿色)，所以默认模板增加了一个类前缀参数
 $fenye2=new fenye();
 $fenye2->settotal(100);
 	$model=[
