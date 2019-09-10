@@ -21,10 +21,11 @@ class fenye{
 		'prev'=>'上一页',
 		'next'=>'下一页',
 		'p'=>'p',//检测的翻页键值
+		'url'=>'',//自定义一个路径,系统将会采用该路径而不是自动获取。该功能暂未有效
 		'p_url_type'=>'get',//路径方式 'get'=?附加参数的路径方式 '\/'=如index/p/5.html等方式可以是其他符合,由于使用到正则所以特殊符合要加'\' 'empty'=如http://80s.la/movie/list/-----p25等无间隔=$style['p']='---p'
 		'css_haslabel'=>true,//css样式是否带有<style>标签
 		);
-	private $modelid='default';//默认模板id
+	private $modelid='default';//默认的模板id
 	private $model=[];//模板数据
 	private $settotal=false;//用于判断是否已经设置了总条数
 
@@ -512,9 +513,10 @@ class fenye{
 				break;
 			default:
 			//默认模板
-				$css_v=[//动态配置css,与$model['对应']
+				$css_v=[//动态配置css,与$model['css']内参数对应,设置模板时自定义
 					'float'=>'left',//整体浮动
 					'color'=>'#009688',//#1E9FFF #5FB878 #009688 #4476A7 #FF5722
+					'btn_class_pre'=>'',//类前缀，一般使用可用忽略
 					//...更多动态参数
 				];//下面的$model['css']中对应变量集，不使用$model['css']可以忽略
 				$css_v=empty($css_v_set)?$css_v:array_merge($css_v,$css_v_set);
@@ -536,10 +538,10 @@ class fenye{
 					],
 					'css'=>'
 						/*默认分页类样式*/
-						.config_fanye_{
+						.'.$css_v['btn_class_pre'].'config_fanye_{
 						  float: '.$css_v['float'].';
 						}
-						.config_fanye_a{
+						.'.$css_v['btn_class_pre'].'config_fanye_a{
 						  padding: 0 15px;
 						  color: #333;
 						  background-color: #fff;
@@ -554,25 +556,25 @@ class fenye{
 						  font-family: "微软雅黑";
 
 						}
-						.config_fanye_a:hover{
+						.'.$css_v['btn_class_pre'].'config_fanye_a:hover{
 						  color:'.$css_v['color'].';
 						}
-						.config_fanye_a:first-child{
+						.'.$css_v['btn_class_pre'].'config_fanye_a:first-child{
 						  border-radius:2px 0 0 2px;
 						}
-						.config_fanye_a:last-child{
+						.'.$css_v['btn_class_pre'].'config_fanye_a:last-child{
 						  border-radius: 0 2px 2px 0;
 						}
-						.config_fanye_a_{
+						.'.$css_v['btn_class_pre'].'config_fanye_a_{
 						  background: '.$css_v['color'].';
 						  border: 1px solid '.$css_v['color'].';
 						  color: #fff;
 						  border-radius:2px ;
 						}
-						.config_fanye_a_:hover{
+						.'.$css_v['btn_class_pre'].'config_fanye_a_:hover{
 						  color:#fff;
 						}
-						.config_fanye_d{
+						.'.$css_v['btn_class_pre'].'config_fanye_d{
 						  color: #d2d2d2 !important;
 						  cursor: not-allowed !important;
 						}
