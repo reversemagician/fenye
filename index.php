@@ -19,7 +19,7 @@ echo '简单使用：<br>'.$fen_result['css'],$fen_result['html'];//输出获取
 // sethtmlmodel() 选择和动态配置模板参数
 $fenye=new fenye();
 $fenye->settotal(100);//设置数据总数 方法一
-$fenye->setstyle(['first'=>'first','last'=>'last','p'=>'p2']);//配置$this->style 方法二
+$fenye->setstyle(['first'=>'first','last'=>'last','p'=>'p2','offset'=>2]);//配置$this->style 方法二
 	$model=[
 				'html'=>[
 					'btn'=>[//全局按钮样式

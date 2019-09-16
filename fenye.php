@@ -12,7 +12,6 @@ class fenye{
 	public $count_paye=0;//共有多少页
 	public $p=0;//当前页
 	public $style=array(//样式数组,
-		'offset'=>0,//当前页按钮的偏移量,正向右,负向左。偏移量最好小于$page_number/2
 		'set_first'=>true,//显示首页
 		'set_last'=>true,//显示尾页
 		'set_prev'=>true,//显示上一页
@@ -25,6 +24,7 @@ class fenye{
 		'p_url_type'=>'get',//路径方式 'get'=?附加参数的路径方式 '\/'=如index/p/5.html等方式可以是其他符合,由于使用到正则所以特殊符合要加'\' 'empty'=如http://80s.la/movie/list/-----p25等无间隔=$style['p']='---p'
 		'css_haslabel'=>true,//css样式是否带有<style>标签
 		);
+	public $offset=0;//当前页按钮的偏移量,正向右,负向左。偏移量最好小于$page_number/2
 	private $modelid='default';//默认模板id
 	private $model=[];//模板数据
 	
@@ -47,7 +47,7 @@ class fenye{
 	// 配置$this->style参数
 	public function setstyle($arr=array()){
 		foreach($arr as $k => $v){
-			if($this->style[$k]){
+			if(isset($this->style[$k])){
 				$this->style[$k]=$arr[$k];
 			}
 		}
@@ -101,7 +101,7 @@ class fenye{
 		$ge=floor($this->page_number/2);
 		//循环起始值
 		$start=$this->p-$ge;
-		$start=$start-$this->style['offset'];//偏移
+		$start=$start-$this->offset;//偏移
 		$maxstart=$countpaye-$this->page_number+1;//最大起点
 		$start=$start>$maxstart?$maxstart:$start;
 		$start=$start<1?1:$start;//最小起点为1
