@@ -3,28 +3,25 @@
 class fenye{
 
 
-	public $url=0;//路径信息
-	public $pageurl;//当前页路径
-	public $total=0;//总条数
+	public $p=0;//当前页
+	public $total=0;//数据总条数
 	public $settotal=false;//用于判断是否已经设置了总条数
 	public $number=0;//每页显示的条数
 	public $page_number=0;//显示的页码数
 	public $count_paye=0;//共有多少页
-	public $p=0;//当前页
+	public $pageurl='';//当前路径
+	public $url='';//已过滤的路径信息，p值位置将被过滤成#num#。
+				  //如果该值被外部设置(默认:''),此时不会自动获取$p的值,因此此时需要手动设置$p的值
+	public $offset=0;//当前页按钮的偏移量,正向右,负向左。偏移量最好小于$page_number/2
 	public $style=array(//样式数组,
-		'set_first'=>true,//显示首页
-		'set_last'=>true,//显示尾页
-		'set_prev'=>true,//显示上一页
-		'set_next'=>true,//显示下一页
 		'first'=>'首页',
 		'last'=>'尾页',
 		'prev'=>'上一页',
 		'next'=>'下一页',
 		'p'=>'p',//检测的翻页键值
-		'p_url_type'=>'get',//路径方式 'get'=?附加参数的路径方式 '\/'=如index/p/5.html等方式可以是其他符合,由于使用到正则所以特殊符合要加'\' 'empty'=如http://80s.la/movie/list/-----p25等无间隔=$style['p']='---p'
+		'p_url_type'=>'get',//自动过滤路径的方式 'get':?附加参数的路径方式 '\/':如index/p/5.html等方式可以是其他符合,由于使用到正则所以特殊符合要加'\' 'empty':如http://80s.la/movie/list/-----p25等无间隔=$style['p']='---p'
 		'css_haslabel'=>true,//css样式是否带有<style>标签
 		);
-	public $offset=0;//当前页按钮的偏移量,正向右,负向左。偏移量最好小于$page_number/2
 	private $modelid='default';//默认模板id
 	private $model=[];//模板数据
 	
@@ -48,7 +45,7 @@ class fenye{
 	public function setstyle($arr=array()){
 		foreach($arr as $k => $v){
 			if(isset($this->style[$k])){
-				$this->style[$k]=$arr[$k];
+				$this->style[$k]=$v;
 			}
 		}
 	}
@@ -153,10 +150,9 @@ class fenye{
 	}
 	
 	//设置模板 $modelid模板id $model_v_set=动态修改模板的$model的参数 $css_v_set=动态修改模板的css参数 
-	//可外部调用,来选择模板和动态更改模板参数
 	//$call=>external或self;external会覆盖已有$this->model,self不会覆盖
 	public function sethtmlmodel($modelid='default',$model_v_set=[],$css_v_set=[],$call='external'){
-		//阻止class内的的重复调用
+		//阻止分页类内部的重复调用
 		if($call=='self'){
 			if(!empty($this->model)){
 				return $this->model;
@@ -186,9 +182,7 @@ class fenye{
 			$data['next'],
 		];
 		foreach ($basebtn as $v) {
-			if($this->style['set_'.$v['name']]){
-				$btn[$v['name'].'_btn']=$this->makingabtn($v['name'],$v);
-			}
+			$btn[$v['name'].'_btn']=$this->makingabtn($v['name'],$v);
 		}
 
 		//block
@@ -225,18 +219,21 @@ class fenye{
 			}
 		}
 
-		$html=$this->getmodelval('html.outer_begin').implode('',$end).$this->getmodelval('html.outer_end');
+		$html=$this->getmodelval('html.outer_begin').implode('',$end).$this->getmodelval('html.outer_end');//拼接首尾
 		return $html;
 	}
 
-	//判断当前页数和转换url路径
+	//获得当前页和过滤url路径
 	private function getp_reseturl(){
 		$this->getpageurl();//获取当前路径
+
+		if($this->url!=''){return false;}//保证手动设置的url优先
+
 		if ($this->style['p_url_type']=='get') {
 		//get
 			$this->p=!isset($_GET[$this->style['p']])?1:$_GET[$this->style['p']];
 			$this->p=is_numeric($this->p)?$this->p:1;
-			//重新设置url
+			//过滤的url信息
 			$this->url=str_replace('&'.$this->style['p'].'='.$this->p,'', $this->pageurl);
 			$this->url=str_replace('?'.$this->style['p'].'='.$this->p.'&','?', $this->url);
 			$this->url=str_replace('?'.$this->style['p'].'='.$this->p,'', $this->url);
@@ -245,7 +242,7 @@ class fenye{
 		}
 
 		if($this->style['p_url_type']=='empty'){
-		//none
+		//empty
 			// 判断p值
 			$preg='/'.$this->style['p'].'[0-9]+/';
 			preg_match_all($preg,$this->pageurl,$getp);
@@ -256,12 +253,12 @@ class fenye{
 
 				if(count($getp[0])==0){
 					$this->p=1;
-					$this->url=$this->pageurl.$this->style['p'].'#num#';//重新设置url
+					$this->url=$this->pageurl.$this->style['p'].'#num#';
 				}
 				if(count($getp[0])==1){
 					preg_match_all("/\d+$/",$getp[0][0],$pv);
 					$this->p=$pv[0][0];
-					$this->url=preg_replace($preg,$this->style['p'].'#num#',$this->pageurl);//重新设置url
+					$this->url=preg_replace($preg,$this->style['p'].'#num#',$this->pageurl);
 				}
 			}			
 		}
@@ -278,7 +275,6 @@ class fenye{
 				//待开发,不知道实际情况
 				echo "分页错误：特殊符合做间隔方式空白部分";//
 			}
-			
 		}
 			
 	}
