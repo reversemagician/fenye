@@ -1,7 +1,7 @@
 <?php
+
 //简单分页封装类
 class fenye{
-
 
 	public $p=0;//当前页
 	public $total=0;//数据总条数
@@ -11,7 +11,7 @@ class fenye{
 	public $count_paye=0;//共有多少页
 	public $pageurl='';//当前路径
 	public $url='';//已过滤的路径信息，p值位置将被过滤成#num#。
-				  //如果该值被外部设置(默认:''),此时不会自动获取$p的值,因此此时需要手动设置$p的值
+				  //如果该值被外部设置,此时不会自动获取$p的值,因此此时需要手动设置$p的值
 	public $offset=0;//当前页按钮的偏移量,正向右,负向左。偏移量最好小于$page_number/2
 	public $style=array(//样式数组,
 		'first'=>'首页',
@@ -20,7 +20,7 @@ class fenye{
 		'next'=>'下一页',
 		'p'=>'p',//检测的翻页键值
 		'p_url_type'=>'get',//自动过滤路径的方式 'get':?附加参数的路径方式 '\/':如index/p/5.html等方式可以是其他符合,由于使用到正则所以特殊符合要加'\' 'empty':如http://80s.la/movie/list/-----p25等无间隔=$style['p']='---p'
-		'css_haslabel'=>true,//css样式是否带有<style>标签
+		'style_label'=>true,//css样式是否带有<style>标签
 		);
 	private $modelid='default';//默认模板id
 	private $model=[];//模板数据
@@ -41,6 +41,7 @@ class fenye{
 		$this->total=$total;
 		$this->settotal=true;
 	}
+
 	// 配置$this->style参数
 	public function setstyle($arr=array()){
 		foreach($arr as $k => $v){
@@ -152,7 +153,7 @@ class fenye{
 	//设置模板 $modelid模板id $model_v_set=动态修改模板的$model的参数 $css_v_set=动态修改模板的css参数 
 	//$call=>external或self;external会覆盖已有$this->model,self不会覆盖
 	public function sethtmlmodel($modelid='default',$model_v_set=[],$css_v_set=[],$call='external'){
-		//阻止分页类内部的重复调用
+		//阻止分页类内部的重复调用导致外部调用该方法时模板被覆盖
 		if($call=='self'){
 			if(!empty($this->model)){
 				return $this->model;
@@ -186,29 +187,27 @@ class fenye{
 		}
 
 		//block
-		$block=$this->getmodelval('html.block');
+		$btn['block']=$this->getcorrectmodelval('html.block');
 
 		// loopbtn
-		$modelblock=$this->getvalue('html.loop_block',$this->model);
-		$defaulblock=$this->modeldefaultseting('html.loop_block');
+		$loopblock=$this->getcorrectmodelval('html.loop_block');
 		foreach ($data['loop'] as $k => $v) {
+			//循环按钮
 			$btn['loop_btn'][]=$this->makingabtn('loop',$v);
 			
-			//循环主体间隔
+			//循环间隔
 			if($k<=count($data['loop'])-2){
-				if($modelblock!=''&&$modelblock!='undefined'){
-					$btn['loop_btn'][]=$modelblock;
-				}elseif($defaulblock!=''&&$defaulblock!='undefined'){
-					$btn['loop_btn'][]=$defaulblock;
-				}
+				$btn['loop_btn'][]=$loopblock;
 			}
 		}
+
 		$btn['loop_btn']=implode('',$btn['loop_btn']);
 
 		//排序并匹配系统变量
-		$order=$this->getmodelval('html_btn_order.order');
-		$order_true=$this->getmodelval('html_btn_order.order_true');
+		$order=$this->getcorrectmodelval('html_btn_order.order');
+		$order_true=$this->getcorrectmodelval('html_btn_order.order_true');
 		$end=[];
+
 		foreach ($order as  $v) {
 			if(in_array($v,$order_true)&&$v!=''){
 				if(isset($btn[$v])){
@@ -219,7 +218,8 @@ class fenye{
 			}
 		}
 
-		$html=$this->getmodelval('html.outer_begin').implode('',$end).$this->getmodelval('html.outer_end');//拼接首尾
+		//拼接首尾
+		$html=$this->getcorrectmodelval('html.outer_begin').implode('',$end).$this->getcorrectmodelval('html.outer_end');
 		return $html;
 	}
 
@@ -299,14 +299,13 @@ class fenye{
 	//css的<style>标签删除或增加
 	private function resetcss($css=''){
 		if($css==''){return '';}
-		if ($this->style['css_haslabel']) {
+		if ($this->style['style_label']) {
 			return strpos($css, '<style>')!==false?$css:'<style>'.$css.'</style>';
 		}else{
 			return strpos($css, '<style>')!==false?preg_replace('/<[\/]?style>/','',$css):$css;
 		}
 	}
 	
-
 	//返回多维数组的某个值,$where="waiceng.ceng2.ceng3"
 	private function getvalue($where='',$arr=[]){
 		if($where==''||empty($arr)){return '';}
@@ -325,26 +324,32 @@ class fenye{
 		$text='#text#';
 		$href='#href#';
 
-		//btn
-		if(in_array($name,['first','last','prev','next','loop'])){
-			// 最终配置
-			$finalset=$this->getfinalseting($name);
-			
-			//按钮上显示的文字
-			$remark=$name=='loop'?$val['name']:$this->style[$name];
+		// btn最终配置
+		$finalset=$this->getbtnfinalseting($name);
+		
+		//按钮上显示的文字
+		$remark=$name=='loop'?$val['name']:$this->style[$name];
 
-			//匹配默认变量 #text#
-			$btn= str_replace($text,$remark,$finalset[$val['status']]);
-			
-			//匹配默认变量 #href#
-			if($val['status']=='disable'){
-				$btn=str_replace($href,'javascript:;',$btn);
-			}else{
-				$btn=str_replace($href,$val['href'],$btn);
-			}
+		//匹配默认变量 #text#
+		$btn= str_replace($text,$remark,$finalset[$val['status']]);
+		
+		//匹配默认变量 #href#
+		$btn=str_replace($href,$val['href'],$btn);
 
-			return $btn;
-		}
+		return $btn;
+	}
+
+	//获取按钮的最终配置
+	private function getbtnfinalseting($name){
+		//优先使用模板配置
+		$modelset=$this->getvalue('html.'.$name.'_btn',$this->model);
+		$modelbtnset=$this->getvalue('html.btn',$this->model);
+		//默认模板配置
+		$defaultset=$this->modeldefaultseting('html.'.$name.'_btn');
+		$defaultbtnset=$this->modeldefaultseting('html.btn');
+
+		//合并
+		return array_merge((is_array($defaultbtnset)?$defaultbtnset:[]),(is_array($defaultset)?$defaultset:[]),(is_array($modelbtnset)?$modelbtnset:[]),(is_array($modelset)?$modelset:[]));
 	}
 
 	//匹配系统变量名并全部替换成系统值
@@ -375,36 +380,11 @@ class fenye{
 		return $str;
 	}
 
-	//获取按钮的最终配置
-	private function getfinalseting($name){
-		// conutset
-		if(in_array($name,['count_t','count_p'])){
-			$modelset=$this->getvalue('html.'.$name.'_ele',$this->model);	
-			$defaultset=$this->modeldefaultseting('html.'.$name.'_ele');
-			if($modelset!='undefined'){
-				return array_merge($defaultset,$modelset);
-			}else{
-				return $defaultset;
-			}
-		}
+	
 
-		// btnset
-		if(in_array($name,['first','last','prev','next','loop'])){
-			//优先使用模板配置
-			$modelset=$this->getvalue('html.'.$name.'_btn',$this->model);
-			$modelbtnset=$this->getvalue('html.btn',$this->model);
-			//默认模板配置
-			$defaultset=$this->modeldefaultseting('html.'.$name.'_btn');
-			$defaultbtnset=$this->modeldefaultseting('html.btn');
-
-			//合并
-			return array_merge((is_array($defaultbtnset)?$defaultbtnset:[]),(is_array($defaultset)?$defaultset:[]),(is_array($modelbtnset)?$modelbtnset:[]),(is_array($modelset)?$modelset:[]));
-		}
-	}
-
-	//获取一个模板或默认模板的值
-	private function getmodelval($where=''){
-		//当模板无无该变量时取默认模板的值
+	//获取一个有效的值 模板或默认模板的值
+	private function getcorrectmodelval($where=''){
+		//当模板无该变量时取默认模板的值
 		$result=$this->getvalue($where,$this->model);
 		return $result=="undefined"?$this->modeldefaultseting($where):$result;
 	}
@@ -434,7 +414,7 @@ class fenye{
 		switch ($modelid) {
 			case 'base':
 			//基础模板,仅用于参数说明
-				$css_v=[];//下面的$model['css']中对应变量集，如不使用$model['css']可以忽略
+				$css_v=[];//下面的$model['css']中对应变量集，如不使用$model['css']可以忽略该参数
 				$css_v=empty($css_v_set)?$css_v:array_merge($css_v,$css_v_set);
 				$model=[
 					'html'=>[//固定html变量配置
@@ -447,7 +427,7 @@ class fenye{
 							//按钮配置方式一 
 							'normal'=>'',//正常状态
 							'selection'=>'',//选中状态
-							'disable'=>'',//不可选状态 默认href="javascript:;"
+							'disable'=>'',//不可选状态 
 							//可以使用 #count_paye#的方式来匹配到系统值 
 							// 'normal'=>'<div>#p#/#count_paye#<div>',//可以利用 #变量系统名# 的的方式匹配到该系统值，如变量$this->p可以写成#p#来匹配到值，或者数组值#style.last#
 						],//总页数
@@ -490,12 +470,12 @@ class fenye{
 				break;
 			default:
 			//默认模板
-				$css_v=[//动态配置css,与$model['对应']
+				$css_v=[//动态css配置,与$model['css']对应
 					'float'=>'left',//整体浮动
 					'color'=>'#009688',//#1E9FFF #5FB878 #009688 #4476A7 #FF5722
 					'btn_class_pre'=>''
 					//...可以自定义更多动态参数
-				];//下面的$model['css']中对应变量集，不使用$model['css']可以忽略
+				];
 				$css_v=empty($css_v_set)?$css_v:array_merge($css_v,$css_v_set);
 				$model=[
 					'html'=>[
@@ -504,7 +484,7 @@ class fenye{
 						'btn'=>[//按钮样式
 							'normal'=>'<a href="#href#" class="config_fanye_a">#text#</a>',
 							'selection'=>'<a href="#href#" class="config_fanye_a config_fanye_a_">#text#</a>',
-							'disable'=>'<a href="#href#" class="config_fanye_a config_fanye_d">#text#</a>',
+							'disable'=>'<a href="javascript:;" class="config_fanye_a config_fanye_d">#text#</a>',
 						],
 
 					],
@@ -579,12 +559,11 @@ class fenye{
 					$this->my_merge($model_v_set,$model);
 					return $model_v_set;
 				}
-
 				break;
 		}
 	}
 
-	//模板的默认配置 $where返回指定配置项
+	//模板的默认配置 $where指定返回配置项
 	private function modeldefaultseting($where=''){
 		$model=[
 			'html'=>[
@@ -596,24 +575,23 @@ class fenye{
 					'selection'=>'<a href="#href#" class="fenye_a fenye_selection">#text#</a>',
 					'disable'=>'<a href="#href#" class="fenye_a fenye_disable">#text#</a>',
 				],
-				'loop_btn'=>[],//循环页
-				'prev_btn'=>[],//上页
-				'next_btn'=>[],//下页
-				'first_btn'=>[],//首页
-				'last_btn'=>[],//尾页
+				'loop_btn'=>[],
+				'prev_btn'=>[],
+				'next_btn'=>[],
+				'first_btn'=>[],
+				'last_btn'=>[],
 				'block'=>''
 			],
-			'html_btn_order'=>[//按钮显示顺序配置
-				'order'=>[ //显示顺序
+			'html_btn_order'=>[
+				'order'=>[ 
 					'first_btn',
 					'prev_btn',
 					'loop_btn',
 					'next_btn',
 					'last_btn',
-					'<span>共#count_paye#页</span>',
-					'<span>共#total#条</span>',
+					'<span>共#count_paye#页</span><span>共#total#条</span>',
 				],
-				'order_true'=>[//合法的显示顺序名
+				'order_true'=>[
 					'first_btn',
 					'prev_btn',
 					'loop_btn',
