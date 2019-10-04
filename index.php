@@ -29,11 +29,12 @@ $fenye->setstyle(['first'=>'first','last'=>'last','p'=>'p2','offset'=>2]);//配�
 				],
 				'html_btn_order'=>[
 					'order'=>[ //显示顺序
-						'loop_btn',
-						'first_btn',
 						'prev_btn',
-						'next_btn',
+						'first_btn',
+						'loop_btn',
 						'last_btn',
+						'next_btn',
+						
 						'<div class="config_fanye_count">#p#/#count_paye#</div>',//#系统变量名#
 					],
 				]
@@ -68,7 +69,7 @@ $fenye1->sethtmlmodel('default',$model,$css);
 $fenye1_result=$fenye1->result();
 echo '<br><br><br>css.btn_class_pre：<br>'.$fenye1_result['css'],$fenye1_result['html'];
 
-//////其他用法1:在外部增加一个下一版的按钮
+//////其他用法1:自定义按钮：在外部增加一个下一版的按钮
 $yema=7;//分页的页码数量
 $fenye2=new fenye(10,$yema,3000);
 $fenye2_data=$fenye2->maindata();//初始化并获取数据
@@ -92,3 +93,33 @@ $model=[
 $fenye2->sethtmlmodel('default',$model);
 $fenye2_result=$fenye2->result();
 echo '<br><br><br>其他用法：<br>'.$fenye2_result['css'],$fenye2_result['html'];
+
+//////select:
+$fenye3=new fenye(10,10,3000);
+$model3=[
+				'html'=>[
+					'outer_begin'=>'<select onchange="fenye_select(this.value)">',//分页外层头部
+					'outer_end'=>'</select>',//分页外层尾部
+					'btn'=>[//全局按钮样式
+						'normal'=>'<option value="#href#">#text#</option>',
+						'selection'=>'<option value="#href#" selected = "selected">#text#</option>',
+						'disable'=>'<option value="#href#" disabled="disabled">#text#</option>',
+					]
+				],
+				'html_btn_order'=>[
+					'order'=>[ //显示顺序
+						'first_btn',
+						'loop_btn',
+						'',
+						'',//视情况补上一些空白排序以防默认模板中的排序漏出
+						'',
+						'',
+						'',
+						'',
+					],
+				]
+			];
+$fenye3->sethtmlmodel('default',$model3);
+$fenye3_result=$fenye3->result();
+echo '<br><br><br>select：<br>'.$fenye3_result['css'],$fenye3_result['html'];
+echo '<script>fenye_select=function (url){window.location.href=url;}</script>';//跳转
