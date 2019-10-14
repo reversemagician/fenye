@@ -1,125 +1,149 @@
 <?php
 include 'fenye.php';
 
-//////最简单的使用放
-$fen=new fenye();
-$fen->settotal(100);//总数据量，至少调用一次该方法
-$fen_result=$fen->result();//获取分页结果
-echo '简单使用：<br>'.$fen_result['css'],$fen_result['html'];//输出获取结果
+//////最简单的使用
+	$fenye=new fenye(20,7,100);//每页数据量,页码数量,数据总数
 
+	// $fenye_data=$fenye->mainData();//仅获取数据结果
+	// $fenye_html=$fenye->mainHtml();//仅获取html结果
 
-//////常用方法 (4个)
-// 全部方法：
-// settotal() 设置数据总数
-// setstyle() 设置分页配置 *也可直接修改$style变量达到效果
-// result()	  直接获取全部结果
-// maindata() 获取分页数据
-// getlimit() 获取limit信息 
-// mainhtml() 获取分页html字符串
-// sethtmlmodel() 选择和动态配置模板参数
-$fenye=new fenye();
-$fenye->settotal(100);//设置数据总数 方法一
-$fenye->setstyle(['first'=>'first','last'=>'last','p'=>'p2','offset'=>2]);//配置$this->style 方法二
+	$fenye_result=$fenye->result();//获取全部结果(包括数据结果和html结果)
+	// print_r($fenye_result['limit']);die;//sql语句的limit信息
+
+	echo '简单使用：<br>'.$fenye_result['css'],$fenye_result['html'];//输出结果
+
+//////一选择模板:
+	$fenye1=new fenye(12,7,500);
+
+	$default_model=$fenye1->result();//默认html的model
+
+	$fenye1->sethtmlmodel('select');//选择模板
+
+	$select_model=$fenye1->result();//select的model 
+
+	echo '<br><br><br>一、选择模板：<br>';
+
+	echo '默认模板<br>'.$default_model['css'],$default_model['html'],$default_model['script'];
+
+	echo '<br><br>select模板<br>'.$select_model['css'],$select_model['html'],$select_model['script'];
+
+	///////二动态配置模板（或自定义模板）
+	echo '<br><br><br>二、动态配置模板：<br>';
+
 	$model=[
 				'html'=>[
-					'btn'=>[//全局按钮样式
-						'selection'=>'<a href="#href#" class="config_fanye_a config_fanye_a_">##text##</a>',
-						'disable'=>'',//隐藏按钮
-					]
+					'first_text'=>'第一页',//4个基础按钮中·首页·的文字
+					'last_btn'=>[//4个基础按钮中·尾页·的的样式
+						'normal'=>'<a href="#href#" class="config_fanye_a">最后一页</a>',//也可以在这里设置文字
+						'disable'=>''//为空表示不显示
+					],
 				],
 				'html_btn_order'=>[
-					'order'=>[ //显示顺序
+					'order'=>[ //改变改参数显示顺序
 						'prev_btn',
 						'first_btn',
-						'loop_btn',
 						'last_btn',
 						'next_btn',
-						
-						'<div class="config_fanye_count">#p#/#count_paye#</div>',//#系统变量名#
-					],
-				]
-			];
-	$css=[
-		'color'=>'#4476A7',
-	];
-$fenye->sethtmlmodel('default',$model,$css);//动态配置模板参数 方法三
-$fenye_result=$fenye->result();//获取结果 方法四
-echo '<br><br><br>常用方法：<br>'.$fenye_result['css'],$fenye_result['html'];
-
-
-
-//////动态默认模板css.btn_class_pre参数
-//由上两个例子可见,虽然第二个例子配置了css.color的参数,但是按钮颜色是相同的，因为在同一个html页面中class相同所以，css样式被覆盖了(默认颜色是绿色)，所以默认模板增加了一个类前缀参数
-$fenye1=new fenye();
-$fenye1->settotal(100);
-	$model=[
-				'html'=>[
-					'btn'=>[//全局按钮样式
-						'normal'=>'<a href="#href#" class="pre_config_fanye_a">#text#</a>',
-						'selection'=>'<a href="#href#" class="pre_config_fanye_a pre_config_fanye_a_">#text#</a>',
-						'disable'=>'<a href="#href#" class="pre_config_fanye_a pre_config_fanye_d">#text#</a>',
-					]
-				]
-			];
-	$css=[
-		'color'=>'#FF5722',
-		'btn_class_pre'=>'pre_'//类前缀,需要在上面的html.btn中同时修改类名才能生效
-	];
-$fenye1->sethtmlmodel('default',$model,$css);
-$fenye1_result=$fenye1->result();
-echo '<br><br><br>css.btn_class_pre：<br>'.$fenye1_result['css'],$fenye1_result['html'];
-
-//////其他用法1:自定义按钮：在外部增加一个下一版的按钮
-$yema=7;//分页的页码数量
-$fenye2=new fenye(10,$yema,3000);
-$fenye2_data=$fenye2->maindata();//初始化并获取数据
-$prev_block=$fenye2->p>$yema/2+1?'<a href="'.str_replace('#num#',$fenye2->p-$yema, $fenye2->url).'" class="config_fanye_a">...<a>':'';//上一版btn
-$next_block=$fenye2->p<$fenye2->count_paye-$yema/2?'<a href="'.str_replace('#num#',$fenye2->p+$yema, $fenye2->url).'" class="config_fanye_a">...<a>':'';//下一版btn
-$model=[
-	'html_btn_order'=>[
-					'order'=>[ //显示顺序
-						'first_btn',
+						'loop_btn',
 						'prev_btn',
-						$prev_block,
-						'loop_btn',
-						$next_block,
 						'next_btn',
-						'last_btn',
 						'<div class="config_fanye_count">#p#/#count_paye#</div>',
-						
-					],
-				]
-];
-$fenye2->sethtmlmodel('default',$model);
-$fenye2_result=$fenye2->result();
-echo '<br><br><br>其他用法：<br>'.$fenye2_result['css'],$fenye2_result['html'];
-
-//////select:
-$fenye3=new fenye(10,10,3000);
-$model3=[
-				'html'=>[
-					'outer_begin'=>'<select onchange="fenye_select(this.value)">',//分页外层头部
-					'outer_end'=>'</select>',//分页外层尾部
-					'btn'=>[//全局按钮样式
-						'normal'=>'<option value="#href#">#text#</option>',
-						'selection'=>'<option value="#href#" selected = "selected">#text#</option>',
-						'disable'=>'<option value="#href#" disabled="disabled">#text#</option>',
-					]
-				],
-				'html_btn_order'=>[
-					'order'=>[ //显示顺序
-						'first_btn',
-						'loop_btn',
-						'',
-						'',//视情况补上一些空白排序以防默认模板中的排序漏出
-						'',
-						'',
-						'',
-						'',
 					],
 				]
 			];
-$fenye3->sethtmlmodel('default',$model3);
-$fenye3_result=$fenye3->result();
-echo '<br><br><br>select：<br>'.$fenye3_result['css'],$fenye3_result['html'];
-echo '<script>fenye_select=function (url){window.location.href=url;}</script>';//跳转
+
+	$fenye1->sethtmlmodel('default',$model);
+
+	$fenye1_result=$fenye1->result();
+
+	echo '改变元素的显示顺序或内容：<br>'.$fenye1_result['css'],$fenye1_result['html'];
+
+
+//////三.其他
+	//由上两个例子可见,虽然第二个例子配置了css.color的参数,但是按钮颜色是相同的，因为在同一个html页面中class相同所以，css样式被覆盖了(默认颜色是绿色)，所以默认模板增加了一个类前缀参数
+	echo '<br><br><br>三.其他(不常用的用法)<br>';
+
+	$fenyecss=new fenye();
+
+	$fenyecss->settotal(100);
+
+		$model=[
+					'html'=>[
+						'btn'=>[
+							'normal'=>'<a href="#href#" class="pre_config_fanye_a">#text#</a>',
+							'selection'=>'<a href="#href#" class="pre_config_fanye_a pre_config_fanye_a_">#text#</a>',
+							'disable'=>'<a href="#href#" class="pre_config_fanye_a pre_config_fanye_d">#text#</a>',
+						]
+					]
+				];
+		$css=[
+			'color'=>'#1E9FFF',
+			'btn_class_pre'=>'pre_'//类前缀,需要在上面的html.btn中同时修改类名才能生效
+		];
+
+	$fenyecss->sethtmlmodel('default',$model,$css);
+
+	$fenyecss_result=$fenyecss->result();
+
+	echo '默认html模板中的css.btn_class_pre参数：<br>'.$fenyecss_result['css'],$fenyecss_result['html'];
+
+	$fenyep=new fenye();
+
+	$fenyep->settotal(100);
+
+	$fenyep->setUrlModel(['p'=>'paye']);
+
+	$fenyep_result=$fenyep->result();//获取结果 方法四
+
+	echo '<br><br><br>setUrlModel方法：<br>'.$fenyep_result['css'],$fenyep_result['html'];
+
+//////四.根据业务逻辑自定义构建更复杂的html model
+	//bilibili模板
+	echo '<br><br><br>四.根据业务逻辑构建html model<br>';
+	$or=new fenye(10,5);
+	$or->setTotal(200);//设置数据总数
+	$or->setHtmlModel('bilibili');
+	// 显示逻辑定义在bilibili模板html_btn_order.order_rule
+	$or_result=$or->result();
+	echo '<br>类似bilibili分页逻辑：<br>'.$or_result['css'],$or_result['html'],$or_result['script'];
+
+	$or1=new fenye(10,5);
+	$or1->setTotal(200);
+	$or1->setHtmlModel('bilibili',['html'=>['loop_check_reset'=>true]]);//添加这个参数,页码显示以间隔
+	$or1_result=$or1->result();
+	echo '<br>和bilibili一样效果的分页逻辑：<br>'.$or1_result['css'],$or1_result['html'],$or1_result['script'];
+
+	//动态的配置默认模板达到bilibili模板的效果
+	$de=new fenye(10,5,200);
+	$de->mainData();//必须先初始化数据
+	$model=[
+		'html'=>[
+			'loop_check_reset'=>true,
+			'btn'=>[
+				'disable'=>''//把4个基础按钮disable状态改成空值
+			],
+			'first_text'=>'#self_p#',//把首页的说明改成数字
+			'last_text'=>'#self_p#',//把尾页的说明改成数字
+		],
+		'html_btn_order'=>[
+			'order'=>[//需要更更改显示排序，添加默认模板没有的按钮元素
+				'prev_btn',
+				'first_btn',
+				'<a href="#href#" class="config_fanye_a">...</a>',
+				'loop_btn',
+				'<a href="#href#" class="config_fanye_a">...</a>',
+				'last_btn',
+				'next_btn',
+
+			],
+			'order_rule'=>[//显示逻辑
+				1=>$de->loopstart>=2,
+				2=>$de->loopstart>=2+1,
+				4=>$de->loopend<$de->count_paye-1,
+				5=>$de->loopend<$de->count_paye,
+			]
+		]
+	];
+	$de->setHtmlModel('default',$model);//配置模板
+	$de_result=$de->mainHtml();//获取结果
+	echo '<br>动态配置默认模板达到bilibili的效果：<br>'.$de_result['css'],$de_result['html'],$de_result['script']; 
