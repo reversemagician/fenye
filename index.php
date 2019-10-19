@@ -1,19 +1,24 @@
 <?php
 include 'fenye.php';
 
+
+$fenye =new fenye(50);
+$result=$fenye->result();
+// echo $result['css'],$result['html'];die;
+
 //////最简单的使用
-	$fenye=new fenye(20,7,100);//每页数据量,页码数量,数据总数
+	$fenye=new fenye(100,20,7);//数据总数,每页数据量,页码数量
+	$fenye_html=$fenye->mainHtml();//获取html结果
+	echo '简单使用：<br>'.$fenye_html['css'],$fenye_html['html'];//输出结果
 
-	// $fenye_data=$fenye->mainData();//仅获取数据结果
-	// $fenye_html=$fenye->mainHtml();//仅获取html结果
+	// $fenye_data=$fenye->mainData();//获取数据结果
+	// $fenye_result=$fenye->result();//获取全部结果(包括数据结果和html结果)
+	// print_r($fenye_html['limit']);die;//sql语句的limit信息
 
-	$fenye_result=$fenye->result();//获取全部结果(包括数据结果和html结果)
-	// print_r($fenye_result['limit']);die;//sql语句的limit信息
-
-	echo '简单使用：<br>'.$fenye_result['css'],$fenye_result['html'];//输出结果
+	
 
 //////一选择模板:
-	$fenye1=new fenye(12,7,500);
+	$fenye1=new fenye(500,12,7);
 
 	$default_model=$fenye1->result();//默认html的model
 
@@ -63,9 +68,7 @@ include 'fenye.php';
 	//由上两个例子可见,虽然第二个例子配置了css.color的参数,但是按钮颜色是相同的，因为在同一个html页面中class相同所以，css样式被覆盖了(默认颜色是绿色)，所以默认模板增加了一个类前缀参数
 	echo '<br><br><br>三.其他(不常用的用法)<br>';
 
-	$fenyecss=new fenye();
-
-	$fenyecss->settotal(100);
+	$fenyecss=new fenye(100);
 
 		$model=[
 					'html'=>[
@@ -87,9 +90,7 @@ include 'fenye.php';
 
 	echo '默认html模板中的css.btn_class_pre参数：<br>'.$fenyecss_result['css'],$fenyecss_result['html'];
 
-	$fenyep=new fenye();
-
-	$fenyep->settotal(100);
+	$fenyep=new fenye(100);
 
 	$fenyep->setUrlModel(['p'=>'paye']);
 
@@ -98,27 +99,27 @@ include 'fenye.php';
 	echo '<br><br><br>setUrlModel方法：<br>'.$fenyep_result['css'],$fenyep_result['html'];
 
 //////四.根据业务逻辑自定义构建更复杂的html model
-	//bilibili模板
+	//类似bilibili模板
 	echo '<br><br><br>四.根据业务逻辑构建html model<br>';
-	$or=new fenye(10,5);
-	$or->setTotal(200);//设置数据总数
+	$or=new fenye(200);
 	$or->setHtmlModel('bilibili');
 	// 显示逻辑定义在bilibili模板html_btn_order.order_rule
 	$or_result=$or->result();
 	echo '<br>类似bilibili分页逻辑：<br>'.$or_result['css'],$or_result['html'],$or_result['script'];
 
-	$or1=new fenye(10,5);
-	$or1->setTotal(200);
-	$or1->setHtmlModel('bilibili',['html'=>['loop_check_reset'=>true]]);//添加这个参数,页码显示以间隔
+	//相同的bilibili模板
+	$or1=new fenye(200);
+	$or1->loopmodel='default1';//循环体逻辑更换成default1（新增的逻辑可以在getLoop()方法中添加）
+	$or1->setHtmlModel('bilibili');
 	$or1_result=$or1->result();
 	echo '<br>和bilibili一样效果的分页逻辑：<br>'.$or1_result['css'],$or1_result['html'],$or1_result['script'];
 
 	//动态的配置默认模板达到bilibili模板的效果
-	$de=new fenye(10,5,200);
+	$de=new fenye(200);
+	$or1->loopmodel='default1';//因为这是数据逻辑，所以需要在 '初始化数据' 之前调用
 	$de->mainData();//必须先初始化数据
 	$model=[
 		'html'=>[
-			'loop_check_reset'=>true,
 			'btn'=>[
 				'disable'=>''//把4个基础按钮disable状态改成空值
 			],
@@ -139,8 +140,8 @@ include 'fenye.php';
 			'order_rule'=>[//显示逻辑
 				1=>$de->loopstart>=2,
 				2=>$de->loopstart>=2+1,
-				4=>$de->loopend<$de->count_paye-1,
-				5=>$de->loopend<$de->count_paye,
+				4=>$de->looplast<$de->count_paye-1,
+				5=>$de->looplast<$de->count_paye,
 			]
 		]
 	];
