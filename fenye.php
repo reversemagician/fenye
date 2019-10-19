@@ -4,15 +4,15 @@
 class fenye{
 
 	private $total=0;//数据总条数
-	private $settotal=false;//用于判断是否已经设置了总条数
 	private $number=10;//每页显示的条数
 	private $page_number=5;//显示的页码数
-	private $offset=0;//当前页按钮的偏移量,正向右,负向左。偏移量最好小于$page_number/2
-	private $urlmodel=array(
+	private $urlmodel=array(//自动检测路径时的路径方式
 		'p'=>'p',//检测的翻页键值
 		'p_url_type'=>'get',//自动过滤路径的方式 'get':?附加参数的路径方式 '\/':如index/p/5.html等方式可以是其他符合,由于使用到正则所以特殊符合要加'\' 'empty':如http://80s.la/movie/list/-----p25等无间隔=$style['p']='---p'
 		);
-
+	private $model=[];//模板数据
+	public $loopmodel='default';//循环体的计算方式
+	
 	//以下可访问变量,需要在mainData()方法调用后，才可以访问到有效值
 	public $count_paye=0;//共有多少页
 	public $pageurl='';//当前路径
@@ -20,29 +20,21 @@ class fenye{
 	public $url='';//已过滤的路径信息，p值位置将被过滤成#num#。
 				  //如果该值被外部设置,此时不会自动获取$p的值,因此此时需要手动设置$p的值
 	public $loopstart=1;//循环起始值
-	public $loopend=1;//循环起始结束
-	public $loopge=0;//当前页码到循环起始和结束的间隔
-	
-	private $data=[];//主体数据
-	private $model=[];//模板数据
+	public $looplast=1;//循环起始结束
+	public $data=[];//主体数据
 
-	//$number每页显示的数据条数 $page_number显示的页码数 $total数据总量
-	public function __construct($number=10,$page_number=5,$total='')
+	
+
+	//$total数据总量 $number每页显示的数据条数 $page_number显示的页码数 
+	public function __construct($total,$number=10,$page_number=5)
 	{
 		$this->number=$number;
 		$this->page_number=$page_number;
-		if($total!==''){
-			$this->setTotal($total);
-		}
-	}
-
-	//设置总数
-	public function setTotal($total){
 		$this->total=$total;
-		$this->settotal=true;
 	}
 
-	// 配置$this->urlmodel参数
+
+	//配置$this->urlmodel参数
 	public function setUrlModel($arr=array()){
 		foreach($arr as $k => $v){
 			if(isset($this->urlmodel[$k])){
@@ -80,13 +72,93 @@ class fenye{
 		if(empty($this->data)){
 			$this->mainData();
 		}
-		$model=$this->sethtmlModel('default',[],[],'self');//确认初始化模板
-		$html=$this->btn($this->data);//按钮主体
+		//确认初始化模板
+		$model=$this->sethtmlModel('default',[],[],'self');
+		//按钮主体
+		$html=$this->btn($this->data);
 		return [
 			'html'=>$html,
 			'css'=>$this->model['css'],
 			'script'=>$this->model['script'],
+			'limit'=>$this->getLimit()
 		];
+	}
+
+
+	/**
+	 * 获取循环起始和结束值
+	 * @param number $countpaye  总页数
+	 * @param number $pagenumber 页码数
+	 * @param number $p          当前页
+	 * @return array 			 起始和结束值
+	 */
+	private function GetLoop($countpaye,$pagenumber,$p){
+		$loopmodel=$this->loopmodel;
+		switch ($loopmodel) {
+			case 'pagenumber':
+			//以倍数页码的方式
+				$last=ceil($p/$pagenumber)*$pagenumber;
+				$start=$last-$pagenumber;
+				$start=$start>0?$start:1;//确认有效值
+				$last=$countpaye<$last?$countpaye:$last;//确认有效值
+				
+				return [
+					'start'=>$start,
+					'last'=>$last,
+				];
+				break;
+
+			case 'default1':
+			// 在'default'的前提下增加了两个修正
+
+				$offset=0;//当前页按钮的偏移量,正向右,负向左。偏移量最好小于$page_number/2
+				$ge=floor($pagenumber/2);
+				$start=$p-$ge;
+				$start=$start-$offset;//偏移
+				$maxstart=$countpaye-$pagenumber+1;//最大起点
+				$start=$start>$maxstart?$maxstart:$start;
+				$start=$start<1?1:$start;//最小起点为1
+				//循环结束值
+				$last=$start+$pagenumber-1;
+				$last=$last>$countpaye?$countpaye:$last;//最大结束值$countpaye
+				
+				//修正
+					if($start==1&&$last-$start+1>$p+$ge){
+					//当起始值为1时判断修正$last
+						$i=$last-$start+1-($p+$ge);//需要修正的项数
+						$last=$last-$i;
+					}
+					if($last==$countpaye&&$start<$p-$ge){
+					//当$last是最后一页时判断修正$start
+						$i=$p-$ge-$start;//需要修正的项数
+						$start=$start+$i;
+					}
+
+				return [
+					'start'=>$start,
+					'last'=>$last,
+				];
+				break;
+
+			default:
+			//默认当前页于页码居中(可以改变offset来偏移)
+				$offset=0;//正向右,负向左。偏移量最好小于$page_number/2
+				$ge=floor($pagenumber/2);
+				$start=$p-$ge;
+				$start=$start-$offset;//偏移
+				$maxstart=$countpaye-$pagenumber+1;//最大起点
+				$start=$start>$maxstart?$maxstart:$start;
+				$start=$start<1?1:$start;//最小起点为1
+				//循环结束值
+				$last=$start+$pagenumber-1;
+				$last=$last>$countpaye?$countpaye:$last;//最大结束值$countpaye
+
+				return [
+					'start'=>$start,
+					'last'=>$last,
+				];
+				break;
+		}
 	}
 
 	/**
@@ -94,29 +166,22 @@ class fenye{
 	 * @return [type] [description]
 	 */
 	public function mainData(){
-		if(!$this->settotal){echo "分页错误：你没有设置数据总数。(settotal())";die;}
 		//解析路径
 		$this->resetUrl();
-		$data=[];
+		
 		//总页数
 		$countpaye=ceil($this->total/$this->number)==0?1:ceil($this->total/$this->number);
 		$this->count_paye=$countpaye;
+
 		//过滤非法p值
 		$this->p=$this->p>$countpaye?$countpaye:($this->p<=0?1:$this->p);
-		//间隔
-		$ge=floor($this->page_number/2);
-		$this->loopge=$ge;
-		//循环起始值
-		$start=$this->p-$ge;
-		$start=$start-$this->offset;//偏移
-		$maxstart=$countpaye-$this->page_number+1;//最大起点
-		$start=$start>$maxstart?$maxstart:$start;
-		$start=$start<1?1:$start;//最小起点为1
-		//循环结束值
-		$last=$start+$this->page_number-1;
-		$last=$last>$countpaye?$countpaye:$last;//最大结束值$countpaye
-		$this->loopstart=$start;
-		$this->loopend=$last;
+		
+		//循环起始值、结束值
+		$loopdata=$this->GetLoop($countpaye,$this->page_number,$this->p);
+		$this->loopstart=$loopdata['start'];
+		$this->looplast=$loopdata['last'];
+		
+		$data=[];
 		$data['first']=[
 			'name'=>'first',
 			'self_p'=>1,//本身的p值
@@ -147,9 +212,9 @@ class fenye{
 		];
 		$data['count_p']=$countpaye;
 		$data['count_t']=$this->total;
-		for ($x=$start; $x<=$last;$x++) {
+		for ($x=$this->loopstart; $x<=$this->looplast;$x++) {
 			$data['loop'][]=[
-				'name'=>$x,
+				'name'=>$x,//按钮上面的显示
 				'self_p'=>$x,
 				'page_p'=>$this->p,
 				'href'=>str_replace('#num#',$x,$this->url),
@@ -183,11 +248,11 @@ class fenye{
 		if(empty($this->data)){
 			$this->mainData();
 		}
-		//配置模板
+		//配置动态模板
 		$model=$this->htmlModel($modelid,$model_v_set,$css_v_set);
 		//默认配置
 		$modelDefaultSeting=$this->modelDefaultSeting();
-		//合并默认配置
+		//合并配置
 		$this->myArrayMerge($model,$modelDefaultSeting);
 
 		//过滤标签
@@ -224,9 +289,6 @@ class fenye{
 		$btn['block']=$this->model['html']['block'];
 
 		//循环体按钮
-		if($this->model['html']['loop_check_reset']){//检查修正循环：重设循环体
-			$data['loop']=$this->loopCheckReset($data['loop']);
-		}
 		$loopblock=$this->model['html']['loop_block'];//循环间隙
 		foreach ($data['loop'] as $k => $v) {
 			//循环按钮
@@ -275,7 +337,7 @@ class fenye{
 			$i=count($data)-($this->p+$this->loopge);//需要修正的项数
 			$data=array_slice($data,0,-$i);
 		}
-		if($this->loopend==$this->count_paye&&$this->loopstart<$this->p-$this->loopge){
+		if($this->last==$this->count_paye&&$this->loopstart<$this->p-$this->loopge){
 			$i=$this->p-$this->loopge-$this->loopstart;//需要修正的项数
 			$data=array_slice($data,$i);
 		}
@@ -471,7 +533,6 @@ class fenye{
 				$css_v=empty($css_v_set)?$css_v:array_merge($css_v,$css_v_set);
 				$model=[
 					'html'=>[//固定html变量配置
-						'loop_check_reset'=>false,//鉴于某些网站分页，某些情况下(如在首页或者尾页时)的页码显示不是默认的按照最大页码来显示的，因此增加了这个额外的参数。当该参数为true时按照在某些情况下按照间隔来显示页码
 						'outer_begin'=>'',//分页外层头部
 						'outer_end'=>'',//分页外层尾部
 						'loop_block'=>'',//循环间隙，主体循环时自动加
@@ -606,8 +667,8 @@ class fenye{
 						'order_rule'=>[//显示逻辑
 							1=>$this->loopstart>=2,//对应html_btn_order.order.1
 							2=>$this->loopstart>=2+1,//对应html_btn_order.order.2
-							4=>$this->loopend<$this->count_paye-1,//对应html_btn_order.order.4
-							5=>$this->loopend<$this->count_paye,//对应html_btn_order.order.5
+							4=>$this->looplast<$this->count_paye-1,//对应html_btn_order.order.4
+							5=>$this->looplast<$this->count_paye,//对应html_btn_order.order.5
 						]
 					],
 					'script'=>'function enterRedirect(e) {if (event.keyCode == 13) {var str=e.getAttribute("url");var url =str.replace("#num#",e.value);window.location.href=url;}}',
@@ -676,7 +737,6 @@ class fenye{
 	private function modelDefaultSeting($where=''){
 		$model=[
 			'html'=>[
-				'loop_check_reset'=>false,
 				'outer_begin'=>'',//空值
 				'outer_end'=>'',//空值
 				'loop_block'=>'',//空值
