@@ -109,7 +109,7 @@ class fenye{
 				break;
 
 			case 'default1':
-			// 在'default'的前提下增加了两个修正
+			// 在'default'的前提下增加了 修正
 
 				$offset=0;//当前页按钮的偏移量,正向右,负向左。偏移量最好小于$page_number/2
 				$ge=floor($pagenumber/2);
