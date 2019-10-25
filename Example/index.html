@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>慕课网分页示例</title>
+</head>
+<style>
+	*{
+		margin: 0px;
+	}
+	a{
+		text-decoration: none;
+	}
+	.page {
+		margin: 25px 0 auto;
+	    overflow: hidden;
+	    clear: both;
+	    text-align: center;
+	}
+	.page .disabled_page{
+	    display: inline-block;
+	    padding: 0 4px;
+	    min-width: 24px;
+	    height: 32px;
+	    line-height: 32px;
+	    font-size: 14px;
+	    color: #c8cdd2;
+	    text-align: center;
+	}
+	.page a{
+		display: inline-block;
+		margin: 0 8px;
+		padding: 0 4px;
+		min-width: 24px;
+		line-height: 32px;
+		font-size: 14px;
+		color: #4d555d;
+		text-align: center;
+		border-radius: 16px;
+		-webkit-transition: border-color .2s;
+		-moz-transition: border-color .2s;
+		transition: border-color .2s;
+	}
+	.page a.text-page-tag:hover{
+		background: #ccc;
+	}
+	.page a.text-page-tag.active {
+	    background: #4d555d;
+	    color: #fff;
+	}
+
+</style>
+<body>
+	<div style="line-height: 50px;text-align: center;">慕课网分页样式</div>
+	<div class="page">
+		<span class="disabled_page">首页</span>
+		<span class="disabled_page">下一页</span>
+		<a href="#" class="text-page-tag active">1</a>
+		<a href="#" class="text-page-tag">2</a>
+		<a href="#" class="text-page-tag">3</a>
+		<a href="#" class="text-page-tag">4</a>
+		<a href="#" class="text-page-tag">5</a>
+		<a href="#" >上一页</a>
+		<a href="#" >尾页</a>
+	</div>
+
+	<div style="line-height: 50px;text-align: center;">使用分页类输出结果</div>
+	<?php echo $fenye_result['html'];//访问./index.php文件查看结果 ?>
+
+	<div style="line-height: 50px;text-align: center;">使用分页类输出结果1</div>
+	<?php echo $fenye1_result['html'];//访问./index.php文件查看结果 ?>
+</body>
+</html>
