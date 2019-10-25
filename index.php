@@ -1,38 +1,78 @@
 <?php
 include 'fenye.php';
 
-//////最简单的使用
+echo "<style>span{color:#FF5722}</style>";
+//////最简单的使用:3个获取结果的方法 [mainData() mainHtml() result()]
 	$fenye=new fenye(100,20,7);//数据总数,每页数据量,页码数量
 	$fenye_html=$fenye->mainHtml();//获取html结果
-	echo '最简单的使用：<br>'.$fenye_html['css'],$fenye_html['html'];//输出结果
+	echo '<span>最简单的使用：3个获取结果的方法</span><br><br>'.$fenye_html['css'],$fenye_html['html'],'<br><br><br>';//输出结果
 
-	// $fenye_data=$fenye->mainData();//获取数据结果
+	// $fenye_data=$fenye->mainData();//获取数据结果(重复调用时可以重新计算数据)
 	// $fenye_result=$fenye->result();//获取全部结果(包括数据结果和html结果)
-	// print_r($fenye_html['limit']);die;//sql语句的limit信息
+	// print_r($fenye_html['limit']);//sql语句的limit信息（所有结果中都包含）
 
+/////一、一般配置：config()方法
+echo "<span>一、一般配置：config()方法</span><br><br>";
+	$fenye1=new fenye(100);
+
+	//[loopmodel参数]
+	//页码循环部分的逻辑模式：'default','default1','pagenumber'
+	//额外的逻辑可以在 GetLoop()方法中添加
+		//pagenumber
+		$fenye1->config(['loopmodel'=>'pagenumber']);
+		$fenye1_result=$fenye1->mainHtml();
+		echo "loopmodel参数:3种 [可以在类GetLoop()中自定义]<br><br>";
+		echo $fenye1_result['css'],$fenye1_result['html'];
+		
+		$fenye1->config(['loopmodel'=>'default']);
+		$fenye1->mainData();//重新配置了config,所以需要重新初始化
+		$fenye1_result=$fenye1->mainHtml();
+		echo "<br><br>",$fenye1_result['css'],$fenye1_result['html'];
+
+		$fenye1->config(['loopmodel'=>'default1']);
+		$fenye1->mainData();
+		$fenye1_result=$fenye1->mainHtml();
+		echo "<br><br>",$fenye1_result['css'],$fenye1_result['html'];
+
+	//[urlmodel参数] 配置页码识别值'p' 和 识别方式'p_url_type'
+		$fenye1->config(['urlmodel'=>['p'=>'page'],'loopmodel'=>'default']);
+		$fenye1->mainData();
+		$fenye1_result=$fenye1->mainHtml();
+		echo "<br><br>urlmodel参数:<br><br>";
+		echo $fenye1_result['css'],$fenye1_result['html'];
+	// url和p参数：自定义路径(配置该参数后自动获取路径方式将失效)
+		$p=1;//当前页
+		$url='/news/list/#num#';//当前页
+		$fenye1->config(['p'=>$p,'url'=>$url]);
+		$fenye1->mainData();
+		$fenye1_result=$fenye1->mainHtml();
+		echo "<br><br>url和p参数:<br><br>";
+		echo $fenye1_result['css'],$fenye1_result['html'];
+
+//////二、html模板：sethtmlmodel()方法
+	// 额外的html模板可以再htmlModel()方法中添加
+	$fenye2=new fenye(200);
+	echo '<br><br><br><span>二、html模板：sethtmlmodel()方法</span><br>';
+
+	$default_model=$fenye2->result();//默认模板
+
+	$fenye2->sethtmlmodel('bilibili');//选择模板
+	$bili_model=$fenye2->result();//bili模板
+
+	$fenye2->sethtmlmodel('select');//选择模板
+	$select_model=$fenye2->result();//select模板
+	
+	echo '默认模板<br>'.$default_model['css'],$default_model['html'],$default_model['script'];
+	echo '<br><br>bili模板<br>'.$bili_model['css'],$bili_model['html'],$bili_model['script'];
+	echo '<br><br>select模板<br>'.$select_model['css'],$select_model['html'],$select_model['script'];
 	
 
-//////一选择模板:
-	$fenye1=new fenye(500,12,7);
-
-	$default_model=$fenye1->result();//默认模板
-
-	$fenye1->sethtmlmodel('select');//选择模板
-
-	$select_model=$fenye1->result();//select模板
-
-	echo '<br><br><br>一、选择模板：<br>';
-
-	echo '默认模板<br>'.$default_model['css'],$default_model['html'],$default_model['script'];
-
-	echo '<br><br>select模板<br>'.$select_model['css'],$select_model['html'],$select_model['script'];
-
-	///////二动态配置模板（或自定义模板）
-	echo '<br><br><br>二、动态配置模板：<br>';
+///////三、动态配置html模板（或自定义模板）：sethtmlmodel()方法
+	echo '<br><br><br><span>三、动态配置html模板（或自定义模板）：sethtmlmodel()方法</span><br>';
 	$model=[
 				'html'=>[
 					'first_text'=>'第一页',//4个基础按钮中·首页·的文字
-					'last_btn'=>[//4个基础按钮中·尾页·的的样式
+					'last_btn'=>[//4个基础按钮中·尾页·的样式
 						'normal'=>'<a href="#href#" class="config_fanye_a">最后一页</a>',//也可以在这里设置文字
 						'disable'=>''//为空表示不显示
 					],
@@ -46,40 +86,30 @@ include 'fenye.php';
 						'loop_btn',
 						'prev_btn',
 						'next_btn',
-						'<div class="config_fanye_count">#p#/#count_paye#</div>',
+						'<div class="config_fanye_count">#p#/#countpaye#</div>',
 					],
 				]
 			];
 
-	$fenye1->sethtmlmodel('default',$model);
+	$fenye2->sethtmlmodel('default',$model);
 
-	$fenye1_result=$fenye1->result();
+	$fenye2_result=$fenye2->result();
 
-	echo '改变元素的显示顺序或内容：<br>'.$fenye1_result['css'],$fenye1_result['html'];
+	echo '改变元素的显示顺序或内容：<br>'.$fenye2_result['css'],$fenye2_result['html'];
 
-
-
-
-//////三.根据业务逻辑自定义构建更复杂的html model
-	echo '<br><br><br>四.根据业务逻辑构建html model<br>';
-
-	//类似bilibili模板
-		$or=new fenye(200);
-		$or->setHtmlModel('bilibili');
-		// 显示逻辑定义在bilibili模板html_btn_order.order_rule
-		$or_result=$or->result();
-		echo '<br>类似bilibili分页逻辑：<br>'.$or_result['css'],$or_result['html'],$or_result['script'];
+//////四.根据业务逻辑自定义构建更复杂的html模板
+	echo '<br><br><br><span>四.根据业务逻辑构建html模板</span><br>';
 
 	//相同的bilibili模板
 		$or1=new fenye(200);
-		$or1->loopmodel='default1';//循环体逻辑更换成default1（新增的逻辑可以在getLoop()方法中添加）
+		$or1->config(['loopmodel'=>'default1']);//循环体逻辑更换成default1（新增的逻辑可以在getLoop()方法中添加）
 		$or1->setHtmlModel('bilibili');
 		$or1_result=$or1->result();
-		echo '<br>和bilibili一样效果的分页逻辑：<br>'.$or1_result['css'],$or1_result['html'],$or1_result['script'];
+		echo '<br>和bilibili网站一样效果的分页逻辑：<br>'.$or1_result['css'],$or1_result['html'],$or1_result['script'];
 
 	//动态的配置默认模板达到bilibili模板的效果
 		$de=new fenye(200);
-		$or1->loopmodel='default1';//因为这是数据逻辑，所以需要在 '初始化数据' 之前调用
+		$de->config(['loopmodel'=>'default1']);
 		$de->mainData();//必须先初始化数据
 		$model=[
 			'html'=>[
@@ -90,7 +120,7 @@ include 'fenye.php';
 				'last_text'=>'#self_p#',//把尾页的说明改成数字
 			],
 			'html_btn_order'=>[
-				'order'=>[//需要更更改显示排序，添加默认模板没有的按钮元素
+				'order'=>[//需要更改显示排序，添加默认模板没有的按钮元素
 					'prev_btn',
 					'first_btn',
 					'<a href="#href#" class="config_fanye_a">...</a>',
@@ -100,11 +130,11 @@ include 'fenye.php';
 					'next_btn',
 
 				],
-				'order_rule'=>[//显示逻辑
+				'order_rule'=>[//order的显示逻辑
 					1=>$de->loopstart>=2,
 					2=>$de->loopstart>=2+1,
-					4=>$de->looplast<$de->count_paye-1,
-					5=>$de->looplast<$de->count_paye,
+					4=>$de->looplast<$de->countpaye-1,
+					5=>$de->looplast<$de->countpaye,
 				]
 			]
 		];
@@ -113,7 +143,7 @@ include 'fenye.php';
 		echo '<br>动态配置默认模板达到bilibili的效果：<br>'.$de_result['css'],$de_result['html'],$de_result['script']; 
 
 ///四.其他不常用的
-	echo "<br><br><br>五.其他不常用的";
+	echo "<br><br><br><span>五.其他不常用的</span>";
 
 	$other=new fenye(600);
 	$other->mainData();//执行mainData()方法后才可以访问到有效的$data
@@ -130,7 +160,6 @@ include 'fenye.php';
 	echo '<br>$data参数：<br>'.$other_result['css'],$other_result['html'];
 
 	//由上两个例子可见,虽然第二个例子配置了css.color的参数,但是按钮颜色是相同的，因为在同一个html页面中class相同所以，css样式被覆盖了(默认颜色是绿色)，所以默认模板增加了一个类前缀参数
-
 	$fenyecss=new fenye(100);
 
 		$model=[
@@ -143,21 +172,21 @@ include 'fenye.php';
 					]
 				];
 		$css=[
-			'color'=>'#1E9FFF',
-			'btn_class_pre'=>'pre_'//类前缀,需要在上面的html.btn中同时修改类名才能生效
+			'color'=>'#4476A7',
+			'class_pre'=>'pre_'//类前缀,需要在上面的html.btn中同时修改类名才能生效
 		];
 
 	$fenyecss->sethtmlmodel('default',$model,$css);
 
 	$fenyecss_result=$fenyecss->result();
 
-	echo '<br><br>默认html模板中的css.btn_class_pre参数：<br>'.$fenyecss_result['css'],$fenyecss_result['html'];
-
+	echo '<br><br>默认html模板中的css.class_pre参数：<br>'.$fenyecss_result['css'],$fenyecss_result['html'];
+die;
 	$fenyep=new fenye(100);
 
-	$fenyep->setUrlModel(['p'=>'paye']);
+	$fenyep->config(['urlmodel'=>['p'=>'paye']]);
 
-	$fenyep_result=$fenyep->result();//获取结果 方法四
+	$fenyep_result=$fenyep->result();
 
 	echo '<br><br>setUrlModel方法：<br>'.$fenyep_result['css'],$fenyep_result['html'];
 
@@ -169,5 +198,5 @@ include 'fenye.php';
 
 
 
-
+echo "<br><br><br><span>六.使用举例：Example/index.php</span>";
 echo '<div style="height:200px;"> </div>';
