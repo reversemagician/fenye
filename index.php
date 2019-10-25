@@ -181,22 +181,6 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 	$fenyecss_result=$fenyecss->result();
 
 	echo '<br><br>默认html模板中的css.class_pre参数：<br>'.$fenyecss_result['css'],$fenyecss_result['html'];
-die;
-	$fenyep=new fenye(100);
-
-	$fenyep->config(['urlmodel'=>['p'=>'paye']]);
-
-	$fenyep_result=$fenyep->result();
-
-	echo '<br><br>setUrlModel方法：<br>'.$fenyep_result['css'],$fenyep_result['html'];
-
-
-
-
-
-
-
-
 
 echo "<br><br><br><span>六.使用举例：Example/index.php</span>";
 echo '<div style="height:200px;"> </div>';
