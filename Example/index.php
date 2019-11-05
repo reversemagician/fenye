@@ -20,7 +20,7 @@ $model=[
 	],
 ];
 $fenye->setHtmlModel('base',$model);//以base模板为基础，动态的修改html内容
-$fenye_result=$fenye->mainHtml();//结果
+$fenye_result=$fenye->result();//结果
 
 print_r($fenye_result['limit']);//sql的limit
 
@@ -31,14 +31,12 @@ print_r($fenye_result['limit']);//sql的limit
 	
 	$fenye1=new fenye(500,10,7);
 	$fenye1->config(['urlmodel'=>['p'=>'page']]);//同步上面例子的key，确保演示效果
-	$fenye1->mainData();//这一步为了确保下面用到的$fenye1->p的值有效
 	$fenye1->config([
 		'url'=>'/course/list?page=#num#',//已经被过滤的路径
 		'p'=>$fenye1->p,//当前页码,动态值:第一页时是1,第二页时是2...
 	]);
-	$fenye1->mainData();//重新初始化，确认第二次的config生效
 	$fenye1->setHtmlModel('base',$model);//模板
-	$fenye1_result=$fenye1->mainHtml();//结果
+	$fenye1_result=$fenye1->result();//结果
 
 
 

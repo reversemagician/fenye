@@ -1,15 +1,23 @@
 <?php
 include 'fenye.php';
+/*
+
+//分页类所有可用方法
+$fenye=new fneye(200);
+
+$fenye->config();//修改配置，并重新初始化数据
+$fenye->setHtmlModel();//选择html模板
+$fenye->result();//获取结果
+
+*/
 
 echo "<style>span{color:#FF5722}</style>";
-//////最简单的使用:3个获取结果的方法 [mainData() mainHtml() result()]
+//////最简单的使用:获取结果的方法 [result()]
 	$fenye=new fenye(100,20,7);//数据总数,每页数据量,页码数量
-	$fenye_html=$fenye->mainHtml();//获取html结果
-	echo '<span>最简单的使用：3个获取结果的方法</span><br><br>'.$fenye_html['css'],$fenye_html['html'],'<br><br><br>';//输出结果
+	$fenye_result=$fenye->result();//获取html结果
+	
+	echo '<span>最简单的使用:result()方法</span><br><br>'.$fenye_result['css'],$fenye_result['html'],'<br><br><br>';//输出结果
 
-	// $fenye_data=$fenye->mainData();//获取数据结果(重复调用时可以重新计算数据)
-	// $fenye_result=$fenye->result();//获取全部结果(包括数据结果和html结果)
-	// print_r($fenye_html['limit']);//sql语句的limit信息（所有结果中都包含）
 
 /////一、一般配置：config()方法
 echo "<span>一、一般配置：config()方法</span><br><br>";
@@ -17,35 +25,31 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 
 	//[loopmodel参数]
 	//页码循环部分的逻辑模式：'default','default1','pagenumber'
-	//额外的逻辑可以在 GetLoop()方法中添加
+	//额外的逻辑可以在 getLoop()方法中添加
 		//pagenumber
 		$fenye1->config(['loopmodel'=>'pagenumber']);
-		$fenye1_result=$fenye1->mainHtml();
-		echo "loopmodel参数:3种 [可以在类GetLoop()中自定义]<br><br>";
+		$fenye1_result=$fenye1->result();
+		echo "loopmodel参数:3种 [可以在GetLoop()方法中自定义]<br><br>";
 		echo $fenye1_result['css'],$fenye1_result['html'];
 		
 		$fenye1->config(['loopmodel'=>'default']);
-		$fenye1->mainData();//重新配置了config,所以需要重新初始化
-		$fenye1_result=$fenye1->mainHtml();
+		$fenye1_result=$fenye1->result();
 		echo "<br><br>",$fenye1_result['css'],$fenye1_result['html'];
 
 		$fenye1->config(['loopmodel'=>'default1']);
-		$fenye1->mainData();
-		$fenye1_result=$fenye1->mainHtml();
+		$fenye1_result=$fenye1->result();
 		echo "<br><br>",$fenye1_result['css'],$fenye1_result['html'];
 
 	//[urlmodel参数] 配置页码识别值'p' 和 识别方式'p_url_type'
 		$fenye1->config(['urlmodel'=>['p'=>'page'],'loopmodel'=>'default']);
-		$fenye1->mainData();
-		$fenye1_result=$fenye1->mainHtml();
+		$fenye1_result=$fenye1->result();
 		echo "<br><br>urlmodel参数:<br><br>";
 		echo $fenye1_result['css'],$fenye1_result['html'];
 	// url和p参数：自定义路径(配置该参数后自动获取路径方式将失效)
 		$p=1;//当前页
 		$url='/news/list/#num#';//当前页
 		$fenye1->config(['p'=>$p,'url'=>$url]);
-		$fenye1->mainData();
-		$fenye1_result=$fenye1->mainHtml();
+		$fenye1_result=$fenye1->result();
 		echo "<br><br>url和p参数:<br><br>";
 		echo $fenye1_result['css'],$fenye1_result['html'];
 
@@ -110,7 +114,6 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 	//动态的配置默认模板达到bilibili模板的效果
 		$de=new fenye(200);
 		$de->config(['loopmodel'=>'default1']);
-		$de->mainData();//必须先初始化数据
 		$model=[
 			'html'=>[
 				'btn'=>[
@@ -130,7 +133,7 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 					'next_btn',
 
 				],
-				'order_rule'=>[//order的显示逻辑
+				'show_rule'=>[//order的显示逻辑
 					1=>$de->loopstart>=2,
 					2=>$de->loopstart>=2+1,
 					4=>$de->looplast<$de->countpaye-1,
@@ -139,14 +142,13 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 			]
 		];
 		$de->setHtmlModel('default',$model);//配置模板
-		$de_result=$de->mainHtml();//获取结果
+		$de_result=$de->result();//获取结果
 		echo '<br>动态配置默认模板达到bilibili的效果：<br>'.$de_result['css'],$de_result['html'],$de_result['script']; 
 
-///四.其他不常用的
+///五.其他不常用的
 	echo "<br><br><br><span>五.其他不常用的</span>";
 
 	$other=new fenye(600);
-	$other->mainData();//执行mainData()方法后才可以访问到有效的$data
 	$zn=['零','一','二','三','四','五','六','七','八','九'];
 	foreach ($other->data['loop'] as $k => $v) {
 		$newname='';
@@ -156,10 +158,10 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 		}
 		$other->data['loop'][$k]['name']=$newname;
 	}
-	$other_result=$other->mainHtml();
+	$other_result=$other->result();
 	echo '<br>$data参数：<br>'.$other_result['css'],$other_result['html'];
 
-	//由上两个例子可见,虽然第二个例子配置了css.color的参数,但是按钮颜色是相同的，因为在同一个html页面中class相同所以，css样式被覆盖了(默认颜色是绿色)，所以默认模板增加了一个类前缀参数
+	//默认html模板的其他css参数
 	$fenyecss=new fenye(100);
 
 		$model=[
@@ -173,6 +175,7 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 				];
 		$css=[
 			'color'=>'#4476A7',
+			'size'=>1.5,
 			'class_pre'=>'pre_'//类前缀,需要在上面的html.btn中同时修改类名才能生效
 		];
 
@@ -180,7 +183,7 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 
 	$fenyecss_result=$fenyecss->result();
 
-	echo '<br><br>默认html模板中的css.class_pre参数：<br>'.$fenyecss_result['css'],$fenyecss_result['html'];
+	echo '<br><br>默认html模板的其他css参数：<br>'.$fenyecss_result['css'],$fenyecss_result['html'];
 
 echo "<br><br><br><span>六.使用举例：Example/index.php</span>";
 echo '<div style="height:200px;"> </div>';
