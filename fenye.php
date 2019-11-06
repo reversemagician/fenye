@@ -28,8 +28,12 @@ class fenye{
 	public $data=[];//主体数据 *修改有效*
 
 	
-
-	//$total数据总量 $number每页显示的数据条数 $pagenumber显示的页码数 
+	/**
+	 * 设定必要参数并初始化
+	 * @param integer $total      数据总量
+	 * @param integer $number     [每页显示的数据条数]
+	 * @param integer $pagenumber [显示的页码数]
+	 */
 	public function __construct($total,$number=10,$pagenumber=5)
 	{
 		$this->number=$number;
@@ -39,13 +43,13 @@ class fenye{
 	}
 
 	/**
-	 * 配置 
+	 * 修改配置并重新初始化 
 	 * @param [array]   $setting['urlmodel'] $urlmodel的对应参数
 	 * @param [string]  $setting['loopmodel'] 循环体的计算方式
 	 * @param [string]  $setting['pageurl'] 当前url(默认自动获取)
 	 * @param [number]  $setting['p'] 当前页码 (默认自动获取)
 	 * @param [string]  $setting['url'] 已过滤的路径信息 (默认自动获取)
-	 * @return
+	 * @return null 无返回 
 	 */
 	public function config($setting=[]){
 		if(isset($setting['urlmodel'])){
@@ -73,7 +77,10 @@ class fenye{
 		$this->dataInit();//重新初始化
 	}
 
-	//获取全部结果
+	/**
+	 * 获取结果
+	 * @return array 分页结果
+	 */
 	public function result(){
 		
 		// html主体
@@ -708,9 +715,9 @@ class fenye{
 						'outer_begin'=>'<div class="config_fanye_">',
 						'outer_end'=>'<div style="clear:both"></div></div>',
 						'btn'=>[
-							'normal'=>'<a href="#href#" class="config_fanye_a">#text#</a>',
-							'selection'=>'<a href="#href#" class="config_fanye_a config_fanye_a_">#text#</a>',
-							'disable'=>'<a href="javascript:;" class="config_fanye_a config_fanye_d">#text#</a>',
+							'normal'=>'<a href="#href#" class="'.$css_v['class_pre'].'config_fanye_a">#text#</a>',
+							'selection'=>'<a href="#href#" class="'.$css_v['class_pre'].'config_fanye_a '.$css_v['class_pre'].'config_fanye_a_">#text#</a>',
+							'disable'=>'<a href="javascript:;" class="'.$css_v['class_pre'].'config_fanye_a config_fanye_d">#text#</a>',
 						],
 					],
 					'html_btn_order'=>[

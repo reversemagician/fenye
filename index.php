@@ -161,29 +161,20 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 	$other_result=$other->result();
 	echo '<br>$data参数：<br>'.$other_result['css'],$other_result['html'];
 
-	//默认html模板的其他css参数
+	//默认html模板的css参数。如果有需要你可以参考默认模板给其他模板扩展css参数
 	$fenyecss=new fenye(100);
 
-		$model=[
-					'html'=>[
-						'btn'=>[
-							'normal'=>'<a href="#href#" class="pre_config_fanye_a">#text#</a>',
-							'selection'=>'<a href="#href#" class="pre_config_fanye_a pre_config_fanye_a_">#text#</a>',
-							'disable'=>'<a href="#href#" class="pre_config_fanye_a pre_config_fanye_d">#text#</a>',
-						]
-					]
-				];
 		$css=[
-			'color'=>'#4476A7',
-			'size'=>1.5,
-			'class_pre'=>'pre_'//类前缀,需要在上面的html.btn中同时修改类名才能生效
+			'color'=>'#4476A7',//配色
+			'size'=>1.5,//大小
+			'class_pre'=>'pre_'//类前缀
 		];
 
-	$fenyecss->sethtmlmodel('default',$model,$css);
+	$fenyecss->sethtmlmodel('default',[],$css);
 
 	$fenyecss_result=$fenyecss->result();
 
-	echo '<br><br>默认html模板的其他css参数：<br>'.$fenyecss_result['css'],$fenyecss_result['html'];
+	echo '<br><br>默认html模板的其他css参数：（如果有需要你可以参考默认模板给其他模板扩展css参数）<br>'.$fenyecss_result['css'],$fenyecss_result['html'];
 
 echo "<br><br><br><span>六.使用举例：Example/index.php</span>";
 echo '<div style="height:200px;"> </div>';
