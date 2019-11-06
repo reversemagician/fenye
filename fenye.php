@@ -1,4 +1,5 @@
 <?php
+// https://github.com/reversemagician/fenye.git
 
 //简单分页封装类
 class fenye{
