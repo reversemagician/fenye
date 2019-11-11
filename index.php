@@ -29,7 +29,7 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 		//pagenumber
 		$fenye1->config(['loopmodel'=>'pagenumber']);
 		$fenye1_result=$fenye1->result();
-		echo "loopmodel参数:3种 [可以在GetLoop()方法中自定义]<br><br>";
+		echo "loopmodel参数:3种 [额外的逻辑可以在GetLoop()方法中自定义]<br><br>";
 		echo $fenye1_result['css'],$fenye1_result['html'];
 		
 		$fenye1->config(['loopmodel'=>'default']);
@@ -38,6 +38,11 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 
 		$fenye1->config(['loopmodel'=>'default1']);
 		$fenye1_result=$fenye1->result();
+		echo "<br><br>",$fenye1_result['css'],$fenye1_result['html'];
+
+		$fenye1->config(['loopmodel'=>'default','loopextra'=>['offset'=>1]]);
+		$fenye1_result=$fenye1->result();
+		echo "<br><br>loopextra参数: [loopextra是对应该loopmodel的扩展参数，在GetLoop()方法查看是否有扩展参数]";
 		echo "<br><br>",$fenye1_result['css'],$fenye1_result['html'];
 
 	//[urlmodel参数] 配置页码识别值'p' 和 识别方式'p_url_type'
@@ -74,14 +79,14 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 ///////三、动态配置html模板（或自定义模板）：sethtmlmodel()方法
 	echo '<br><br><br><span>三、动态配置html模板（或自定义模板）：sethtmlmodel()方法</span><br>';
 	$model=[
-				'html'=>[
+				'html_set'=>[
 					'first_text'=>'第一页',//4个基础按钮中·首页·的文字
 					'last_btn'=>[//4个基础按钮中·尾页·的样式
 						'normal'=>'<a href="#href#" class="config_fanye_a">最后一页</a>',//也可以在这里设置文字
 						'disable'=>''//为空表示不显示
 					],
 				],
-				'html_btn_order'=>[
+				'html_view'=>[
 					'order'=>[ //改变改参数显示顺序
 						'prev_btn',
 						'first_btn',
@@ -115,14 +120,14 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 		$de=new fenye(200);
 		$de->config(['loopmodel'=>'default1']);
 		$model=[
-			'html'=>[
+			'html_set'=>[
 				'btn'=>[
 					'disable'=>''//把4个基础按钮disable状态改成空值
 				],
 				'first_text'=>'#self_p#',//把首页的说明改成数字
 				'last_text'=>'#self_p#',//把尾页的说明改成数字
 			],
-			'html_btn_order'=>[
+			'html_view'=>[
 				'order'=>[//需要更改显示排序，添加默认模板没有的按钮元素
 					'prev_btn',
 					'first_btn',
@@ -133,7 +138,7 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 					'next_btn',
 
 				],
-				'show_rule'=>[//order的显示逻辑
+				'order_show_rule'=>[//order的显示逻辑
 					1=>$de->loopstart>=2,
 					2=>$de->loopstart>=2+1,
 					4=>$de->looplast<$de->countpaye-1,
@@ -176,5 +181,5 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 
 	echo '<br><br>默认html模板的其他css参数：（如果有需要你可以参考默认模板给其他模板扩展css参数）<br>'.$fenyecss_result['css'],$fenyecss_result['html'];
 
-echo "<br><br><br><span>六.使用举例：Example/index.php</span>";
+echo "<br><br><br><span>六.使用举例：./Example/index.php</span>";
 echo '<div style="height:200px;"> </div>';

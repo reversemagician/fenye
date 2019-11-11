@@ -6,7 +6,7 @@ include '../fenye.php';
 $fenye=new fenye(500,10,7);
 $fenye->config(['urlmodel'=>['p'=>'page']]);//改变页码的识别key
 $model=[
-	'html'=>[
+	'html_set'=>[
 		'outer_begin'=>'<div class="page">',
 		'outer_end'=>'</div>',
 		'btn'=>[ //按钮内容的公共配置
