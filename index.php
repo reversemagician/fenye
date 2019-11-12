@@ -58,17 +58,17 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 		echo "<br><br>url和p参数:<br><br>";
 		echo $fenye1_result['css'],$fenye1_result['html'];
 
-//////二、html模板：sethtmlmodel()方法
+//////二、html模板：setHtmlModel()方法
 	// 额外的html模板可以再htmlModel()方法中添加
 	$fenye2=new fenye(200);
 	echo '<br><br><br><span>二、html模板：sethtmlmodel()方法</span><br>';
 
 	$default_model=$fenye2->result();//默认模板
 
-	$fenye2->sethtmlmodel('bilibili');//选择模板
+	$fenye2->setHtmlModel('bilibili');//选择模板
 	$bili_model=$fenye2->result();//bili模板
 
-	$fenye2->sethtmlmodel('select');//选择模板
+	$fenye2->setHtmlModel('select');//选择模板
 	$select_model=$fenye2->result();//select模板
 	
 	echo '默认模板<br>'.$default_model['css'],$default_model['html'],$default_model['script'];
@@ -76,8 +76,8 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 	echo '<br><br>select模板<br>'.$select_model['css'],$select_model['html'],$select_model['script'];
 	
 
-///////三、动态配置html模板（或自定义模板）：sethtmlmodel()方法
-	echo '<br><br><br><span>三、动态配置html模板（或自定义模板）：sethtmlmodel()方法</span><br>';
+///////三、动态配置html模板（或自定义模板）：setHtmlModel()方法
+	echo '<br><br><br><span>三、动态配置html模板（或自定义模板）：setHtmlModel()方法</span><br>';
 	$model=[
 				'html_set'=>[
 					'first_text'=>'第一页',//4个基础按钮中·首页·的文字
@@ -100,7 +100,7 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 				]
 			];
 
-	$fenye2->sethtmlmodel('default',$model);
+	$fenye2->setHtmlModel('default',$model);
 
 	$fenye2_result=$fenye2->result();
 
@@ -175,7 +175,7 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 			'class_pre'=>'pre_'//类前缀
 		];
 
-	$fenyecss->sethtmlmodel('default',[],$css);
+	$fenyecss->setHtmlModel('default',[],$css);
 
 	$fenyecss_result=$fenyecss->result();
 
