@@ -6,7 +6,7 @@ include 'fenye.php';
 $fenye=new fneye(200);
 
 $fenye->config();//修改配置，并重新初始化数据
-$fenye->setHtmlModel();//选择html模板
+$fenye->htmlModel();//选择html模板
 $fenye->result();//获取结果
 
 */
@@ -58,26 +58,29 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 		echo "<br><br>url和p参数:<br><br>";
 		echo $fenye1_result['css'],$fenye1_result['html'];
 
-//////二、html模板：setHtmlModel()方法
+//////二、html模板：htmlModel()方法
 	// 额外的html模板可以再htmlModel()方法中添加
 	$fenye2=new fenye(200);
-	echo '<br><br><br><span>二、html模板：sethtmlmodel()方法</span><br>';
+	echo '<br><br><br><span>二、html模板：htmlModel()方法</span><br>';
 
 	$default_model=$fenye2->result();//默认模板
 
-	$fenye2->setHtmlModel('bilibili');//选择模板
+	$fenye2->htmlModel('bilibili');//选择模板
 	$bili_model=$fenye2->result();//bili模板
 
-	$fenye2->setHtmlModel('select');//选择模板
+	$fenye2->htmlModel('select');//选择模板
 	$select_model=$fenye2->result();//select模板
 	
 	echo '默认模板<br>'.$default_model['css'],$default_model['html'],$default_model['script'];
 	echo '<br><br>bili模板<br>'.$bili_model['css'],$bili_model['html'],$bili_model['script'];
 	echo '<br><br>select模板<br>'.$select_model['css'],$select_model['html'],$select_model['script'];
+
+	echo '<br><br><br><span>二、一 自定义html模板：htmlModel()方法</span><br>';
+	echo '<br><br>当htmlModel("",$model)的第一个参数为空时，则为空模板，可完全自定义第二个参数';
 	
 
-///////三、动态配置html模板（或自定义模板）：setHtmlModel()方法
-	echo '<br><br><br><span>三、动态配置html模板（或自定义模板）：setHtmlModel()方法</span><br>';
+///////三、动态配置html模板（或自定义模板）：htmlModel()方法
+	echo '<br><br><br><span>三、动态配置html模板（或自定义模板）：htmlModel()方法</span><br>';
 	$model=[
 				'html_set'=>[
 					'first_text'=>'第一页',//4个基础按钮中·首页·的文字
@@ -100,7 +103,7 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 				]
 			];
 
-	$fenye2->setHtmlModel('default',$model);
+	$fenye2->htmlModel('default',$model);
 
 	$fenye2_result=$fenye2->result();
 
@@ -112,7 +115,7 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 	//相同的bilibili模板
 		$or1=new fenye(200);
 		$or1->config(['loopmodel'=>'default1']);//循环体逻辑更换成default1（新增的逻辑可以在getLoop()方法中添加）
-		$or1->setHtmlModel('bilibili');
+		$or1->htmlModel('bilibili');
 		$or1_result=$or1->result();
 		echo '<br>和bilibili网站一样效果的分页逻辑：<br>'.$or1_result['css'],$or1_result['html'],$or1_result['script'];
 
@@ -146,7 +149,7 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 				]
 			]
 		];
-		$de->setHtmlModel('default',$model);//配置模板
+		$de->htmlModel('default',$model);//配置模板
 		$de_result=$de->result();//获取结果
 		echo '<br>动态配置默认模板达到bilibili的效果：<br>'.$de_result['css'],$de_result['html'],$de_result['script']; 
 
@@ -175,7 +178,7 @@ echo "<span>一、一般配置：config()方法</span><br><br>";
 			'class_pre'=>'pre_'//类前缀
 		];
 
-	$fenyecss->setHtmlModel('default',[],$css);
+	$fenyecss->htmlModel('default',[],$css);
 
 	$fenyecss_result=$fenyecss->result();
 

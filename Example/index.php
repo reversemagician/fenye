@@ -19,7 +19,7 @@ $model=[
 		],
 	],
 ];
-$fenye->setHtmlModel('base',$model);//以base模板为基础，动态的修改html内容
+$fenye->htmlModel('',$model);//第一个参数为空表示空模板
 $fenye_result=$fenye->result();//结果
 
 print_r($fenye_result['limit']);//sql的limit
@@ -35,7 +35,7 @@ print_r($fenye_result['limit']);//sql的limit
 		'url'=>'/course/list?page=#num#',//已经被过滤的路径
 		'p'=>$fenye1->p,//当前页码,动态值:第一页时是1,第二页时是2...
 	]);
-	$fenye1->setHtmlModel('base',$model);//模板
+	$fenye1->htmlModel('',$model);//模板
 	$fenye1_result=$fenye1->result();//结果
 
 

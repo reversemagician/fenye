@@ -86,6 +86,10 @@ class fenye{
 	 */
 	public function result(){
 		
+		//确认初始化html模板
+		if(empty($this->htmlmodel)){
+			$this->htmlModel('default',[],[]);
+		}
 		// html主体
 		$html=$this->mainHtml();
 
@@ -108,40 +112,21 @@ class fenye{
 	 * @param  string $call        调用方式，external或self
 	 * @return array               模板数据
 	 */
-	public function setHtmlModel($modelid='default',$model_v_set=[],$css_v_set=[],$call='external'){
-		//阻止分页类内部的重复调用导致外部调用该方法时模板被覆盖
-		if($call=='self'){
-			if(!empty($this->htmlmodel)){
-				return $this->htmlmodel;
-			}
-		}
+	public function htmlModel($modelid='',$model_v_set=[],$css_v_set=[]){
+		
+		$model=$model_v_set;
 
-		//配置动态模板
-		$model=$this->htmlModel($modelid,$model_v_set,$css_v_set);
-		//默认以base模板作为默认配置
-		$modeldefaultseting=$this->htmlModel('base');
-		//合并配置
-		$this->myArrayMerge($model,$modeldefaultseting);
-
-		//过滤标签
-		if(isset($model['css'])){
-			if($model['css']!=''){
-				$model['css']=$this->resetLabel('style',$model['css'],$model['style_label']);
-			}
+		if ($modelid!='') {
+			//选择提供的模板
+			$model=$this->choiceHtmlModel($modelid,$model_v_set,$css_v_set);
 		}
-		if(isset($model['script'])){
-			if($model['script']!=''){
-				$model['script']=$this->resetLabel('script',$model['script'],$model['script_label']);
-			}
-		}
-
-		return $this->htmlmodel=$model;
+		
+		//设置模板
+		$this->setHtmlModel($model);
 	}
 
-	
-
 	/**
-	 * 获取循环起始和结束值
+	 * 获取循环起始和结束值(循环体逻辑)
 	 * @param number $countpaye  总页数
 	 * @param number $pagenumber 页码数
 	 * @param number $p          当前页
@@ -232,8 +217,7 @@ class fenye{
 	 */
 	private function mainHtml()
 	{
-		//确认初始化模板
-		$model=$this->setHtmlModel('default',[],[],'self');
+
 		//生产按钮主体
 		$html=$this->btn($this->data);
 		return [
@@ -554,81 +538,90 @@ class fenye{
 		$a = $a + $b;
 	}
 
+	//设置html模板 
+	private function setHtmlModel($model_set=[]){
+		
+		//html基础模板，设置时需要安照该模板格式进行设置
+		$model=[
+			'html_set'=>[//html基本配置
+				'outer_begin'=>'',//分页外层头部
+				'outer_end'=>'',//分页外层尾部
+				'loop_block'=>'',//循环间隙，主体循环时自动加
+				'block'=>'',//普通间隙 需要在排序手动添加
+				'btn'=>[//所有按钮的公共默认样式
+					'normal'=>'',//正常状态 所有按钮有效
+					'selection'=>'',//选中状态 循环体按钮有效
+					'disable'=>'',//不可选状态 基础按钮有效
+				],
+				'loop_btn'=>[],//循环体按钮
+				'prev_btn'=>[],//上页按钮
+				'next_btn'=>[],//下页按钮
+				'first_btn'=>[],//首页按钮
+				'last_btn'=>[],//尾页按钮
+				'first_text'=>'首页',//若该值为#self_p#代表匹配自身页码
+				'last_text'=>'尾页',//若该值为#self_p#代表匹配自身页码
+				'prev_text'=>'上一页',//若该值为#self_p#代表匹配自身页码
+				'next_text'=>'下一页',//若该值为#self_p#代表匹配自身页码
+			],
+			'html_view'=>[//视图（显示配置）
+				'order'=>[ //显示排序
+					'first_btn',//首页
+					'prev_btn',//上一页
+					'loop_btn',//循环体
+					'next_btn',//下页
+					'last_btn',//尾页
+					//'<div>共#p#页</div>',/*这个是非法顺序值，所有的非法顺序值会被认为是间隙对应添加到分页的对应位置中*/
+				],
+				'order_true'=>[//规定合法的显示顺序名
+					'first_btn',
+					'prev_btn',
+					'loop_btn',
+					'next_btn',
+					'last_btn',
+					'block',
+				],
+				'order_show_rule'=>[//额外显示逻辑
+					// 0=>$this->loopstart>=2,//对应html_view.order的第1项的显示逻辑
+				],
+			],
+			'css'=>'',//对应该模板的css样式
+			'script'=>'',//对应该模板的js内容
+			'style_label'=>true,//css样式是否要带有style标签
+			'script_label'=>true,//script是否要带有标签
+		];
+
+		if(!empty($model_set)){
+			//合并配置
+			$this->myArrayMerge($model_set,$model);
+			$model=$model_set;
+		}
+
+		//过滤标签
+		if(isset($model['css'])){
+			if($model['css']!=''){
+				$model['css']=$this->resetLabel('style',$model['css'],$model['style_label']);
+			}
+		}
+		if(isset($model['script'])){
+			if($model['script']!=''){
+				$model['script']=$this->resetLabel('script',$model['script'],$model['script_label']);
+			}
+		}
+
+		$this->htmlmodel=$model;
+	}
+
 	/**
-	 * 分页模板
+	 * 选择一个html模板
 	 * @param  modelid $modelid    模板id
-	 * @param  modelid $model_v_set动态地配置$model的参数(格式与$model一致)
+	 * @param  modelid $model_v_set动态地配置
 	 * @param  modelid $css_v_set  对应模板分页的css样式配置参数,示例参考默认模板
 	 * @return model               模板数组
 	 */
-	private function htmlModel($modelid='',$model_v_set=[],$css_v_set=[]){
+	private function choiceHtmlModel($modelid='',$model_v_set=[],$css_v_set=[]){
 
 		switch ($modelid) {
-			case 'base':
-			//基础模板。用于参数说明和作为默认参数源。*不要修改该模板
-				$css_v=[];//参数与下面的$model['css']中对应；css动态风格，用法参考默认模板
-				$css_v=empty($css_v_set)?$css_v:array_merge($css_v,$css_v_set);
-				$model=[
-					'html_set'=>[//html基本配置
-						'outer_begin'=>'',//分页外层头部
-						'outer_end'=>'',//分页外层尾部
-						'loop_block'=>'',//循环间隙，主体循环时自动加
-						'block'=>'',//普通间隙 需要在排序手动添加
-						'btn'=>[//所有按钮的公共默认样式
-							'normal'=>'',//正常状态 所有按钮有效
-							'selection'=>'',//选中状态 循环体按钮有效
-							'disable'=>'',//不可选状态 基础按钮有效
-							/*['#self_p#','#href#','#text#']有效的匹配值*/
-							/*#self_p# 匹配当前按钮对应页码数*/
-							/*#href# 匹配当前按钮对应路径*/
-							/*#text# 默认的按钮文字*/
-							/*可以使用 #countpaye#的方式来匹配到系统值 */
-							/*'normal'=>'<div>#p#/#countpaye#<div>',//可以利用 #变量系统名# 的的方式匹配到该系统值，如变量$this->p可以写成#p#来匹配到值，或者二维数组值#style.last#*/
-						],
-						'loop_btn'=>[],//循环体按钮
-						'prev_btn'=>[],//上页按钮
-						'next_btn'=>[],//下页按钮
-						'first_btn'=>[],//首页按钮
-						'last_btn'=>[],//尾页按钮
-						'first_text'=>'首页',//若该值为#self_p#代表匹配自身页码
-						'last_text'=>'尾页',//若该值为#self_p#代表匹配自身页码
-						'prev_text'=>'上一页',//若该值为#self_p#代表匹配自身页码
-						'next_text'=>'下一页',//若该值为#self_p#代表匹配自身页码
-					],
-					'html_view'=>[//视图（显示配置）
-						'order'=>[ //显示排序
-							'first_btn',//首页
-							'prev_btn',//上一页
-							'loop_btn',//循环体
-							'next_btn',//下页
-							'last_btn',//尾页
-							//'<div>共#p#页</div>',/*这个是非法顺序值，所有的非法顺序值会被认为是间隙对应添加到分页的对应位置中*/
-						],
-						'order_true'=>[//规定合法的显示顺序名
-							'first_btn',
-							'prev_btn',
-							'loop_btn',
-							'next_btn',
-							'last_btn',
-							'block',
-						],
-						'order_show_rule'=>[//额外显示逻辑
-							0=>true,//对应html_view.order的第1项 true代表显示
-						],
-					],
-					'css'=>'',//对应该模板的css样式
-					'script'=>'',//对应该模板的js内容
-					'style_label'=>true,//css样式是否要带有style标签
-					'script_label'=>true,//script是否要带有标签
-				];
-				if(empty($model_v_set)){
-					return $model;
-				}else{
-					//动态$model
-					$this->myArrayMerge($model_v_set,$model);
-					return $model_v_set;
-				}
-				break;
+			
 			case 'select':
 				$css_v=[];
 				$css_v=empty($css_v_set)?$css_v:array_merge($css_v,$css_v_set);
